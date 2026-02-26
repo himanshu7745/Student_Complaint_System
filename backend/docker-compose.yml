@@ -31,6 +31,7 @@ services:
       DB_PASSWORD: complaints
       JWT_SECRET: please-change-this-super-secret-key-256-bits-minimum-1234567890
       PREDICTION_API_URL: http://host.docker.internal:8090/complaintFeatures/
+      PREDICTION_IMAGE_MODE: ${PREDICTION_IMAGE_MODE:-BYTES}
       ATTACHMENT_PUBLIC_BASE_URL: http://localhost:8080/api/files
       # Optional CDN domain for attachment delivery (typically image files).
       # Example: https://cdn.yourdomain.com/complaint-attachments

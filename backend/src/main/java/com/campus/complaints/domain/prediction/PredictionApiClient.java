@@ -70,6 +70,6 @@ public class PredictionApiClient {
         }
     }
 
-    public record PredictionRequestItem(String title, String description, List<String> images) {}
+    public record PredictionRequestItem(String title, String description, List<Object> images) {}
     public record PredictionRequest(List<PredictionRequestItem> items) {}
 }

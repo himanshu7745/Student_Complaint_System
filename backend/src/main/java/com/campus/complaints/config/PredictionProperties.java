@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 @ConfigurationProperties(prefix = "prediction")
 public class PredictionProperties {
-    public enum ImageInputMode { URL, BASE64 }
+    public enum ImageInputMode { URL, BASE64, BYTES }
 
     private URI endpoint;
     private ImageInputMode imageInputMode = ImageInputMode.URL;

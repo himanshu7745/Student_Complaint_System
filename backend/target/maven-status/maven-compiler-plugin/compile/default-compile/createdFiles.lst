@@ -7,6 +7,7 @@ com/campus/complaints/domain/attachment/ComplaintAttachmentEntity.class
 com/campus/complaints/scheduler/SlaEscalationScheduler.class
 com/campus/complaints/domain/complaint/AdminComplaintCommandService.class
 com/campus/complaints/domain/complaint/api/ComplaintDtos$ComplaintListItemDTO.class
+com/campus/complaints/domain/prediction/PredictionApiClient$PredictionRequest.class
 com/campus/complaints/domain/complaint/ComplaintCommandService.class
 com/campus/complaints/domain/attachment/AttachmentService.class
 com/campus/complaints/domain/common/BaseEntity.class
