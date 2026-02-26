@@ -89,6 +89,7 @@ def complaint_features(payload: ComplaintFeaturesRequest = Body(...)) -> Complai
             class_texts=payload.class_texts,
             temperature=payload.temperature,
         )
+        print("Predictions made")
         return ComplaintFeaturesResponse(predictions=predictions)
     except ValueError as exc:
         print(f"ValueError in complaint_features: {exc}")

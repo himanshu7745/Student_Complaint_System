@@ -10,7 +10,7 @@ import requests
 from PIL import Image
 
 
-API_URL = "http://127.0.0.1:8000/complaintFeatures"
+API_URL = "http://127.0.0.1:8000/complaintFeatures/"
 
 CLASS_TEXTS = [
     "safety hazard",

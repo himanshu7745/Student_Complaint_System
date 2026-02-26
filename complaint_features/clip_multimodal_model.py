@@ -108,30 +108,47 @@ class CLIPSeverityClassifier(nn.Module):
         return pil_images
 
     def encode_images(self, images: Sequence[ImageInput], normalize: bool = True) -> torch.Tensor:
-        """
-        Encodes a list of images and returns average-pooled embedding of shape [1, D].
-        """
         pil_images = self._prepare_image_inputs(images)
         inputs = self.processor(images=pil_images, return_tensors="pt", padding=True).to(self.device)
 
-        image_features = self.clip.get_image_features(**inputs)  # [N, D]
+        outputs = self.clip.get_image_features(**inputs)
+        
+        # Bulletproof check for the tensor
+        if isinstance(outputs, torch.Tensor):
+            image_features = outputs
+        elif hasattr(outputs, "image_embeds"):
+            image_features = outputs.image_embeds
+        else:
+            # Fallback for standard transformer outputs
+            image_features = outputs[0] 
+        
         if normalize:
             image_features = F.normalize(image_features, dim=-1)
 
-        pooled = image_features.mean(dim=0, keepdim=True)  # [1, D]
+        pooled = image_features.mean(dim=0, keepdim=True)
         if normalize:
             pooled = F.normalize(pooled, dim=-1)
         return pooled
 
     def encode_text(self, text: str, normalize: bool = True) -> torch.Tensor:
-        """
-        Encodes a single text string and returns embedding of shape [1, D].
-        """
         if not isinstance(text, str) or len(text.strip()) == 0:
             raise ValueError("text must be a non-empty string")
 
         inputs = self.processor(text=[text], return_tensors="pt", padding=True, truncation=True).to(self.device)
-        text_features = self.clip.get_text_features(**inputs)  # [1, D]
+        
+        outputs = self.clip.get_text_features(**inputs)
+        
+        # Bulletproof check for the tensor
+        if isinstance(outputs, torch.Tensor):
+            text_features = outputs
+        elif hasattr(outputs, "text_embeds"):
+            text_features = outputs.text_embeds
+        elif hasattr(outputs, "pooler_output"):
+            text_features = outputs.pooler_output
+        else:
+            # Final fallback to the first element in the output tuple
+            text_features = outputs[0]
+        
         if normalize:
             text_features = F.normalize(text_features, dim=-1)
         return text_features
