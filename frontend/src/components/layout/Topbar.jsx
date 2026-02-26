@@ -52,6 +52,13 @@ export function Topbar({ role }) {
           <Link to={role === 'ADMIN' ? '/admin/complaints?status=PENDING_ADMIN_ASSIGNMENT' : '/student/complaints'}>
             <Button variant="secondary" className="hidden sm:inline-flex">Quick View</Button>
           </Link>
+          <Button type="button" variant="outline" size="icon" className="sm:hidden" onClick={logout} aria-label="Logout">
+            <LogOut className="h-4 w-4" />
+          </Button>
+          <Button type="button" variant="outline" className="hidden sm:inline-flex" onClick={logout}>
+            <LogOut className="h-4 w-4" />
+            Logout
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="gap-2">

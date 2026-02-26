@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom'
-import { AlertTriangle, Building2, ClipboardList, Home, PlusCircle } from 'lucide-react'
+import { AlertTriangle, Building2, ClipboardList, Home, LogOut, PlusCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
+import { Button } from '@/components/ui/button'
 
 const STUDENT_ITEMS = [
   { to: '/student/dashboard', label: 'Dashboard', icon: Home },
@@ -16,7 +17,7 @@ const ADMIN_ITEMS = [
 ]
 
 export function Sidebar({ role }) {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const items = role === 'ADMIN' ? ADMIN_ITEMS : STUDENT_ITEMS
 
   return (
@@ -53,6 +54,10 @@ export function Sidebar({ role }) {
           <p className="font-semibold text-foreground">{user?.name}</p>
           <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
         </div>
+        <Button type="button" variant="outline" className="mt-3 w-full justify-start" onClick={logout}>
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
       </div>
     </aside>
   )
