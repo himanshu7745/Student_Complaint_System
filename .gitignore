@@ -4,3 +4,5 @@ backend/data/
 __pycache__/
 .idea/*
 backend/*.idea/
+venv/
+.env/

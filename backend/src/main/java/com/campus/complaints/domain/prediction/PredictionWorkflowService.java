@@ -159,6 +159,9 @@ public class PredictionWorkflowService {
     private ComplaintCategoryType parseCategory(String label) {
         if (label == null) return null;
         String normalized = label.trim().toUpperCase(Locale.ROOT).replace(' ', '_').replace('-', '_');
+        if ("HARRASHMENT".equals(normalized)) {
+            normalized = "HARASSMENT";
+        }
         if ("LIBRARY".equals(normalized) || "MESS".equals(normalized) || "OTHER".equals(normalized)) {
             normalized = "OTHERS";
         }
