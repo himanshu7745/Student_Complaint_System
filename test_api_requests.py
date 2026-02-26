@@ -130,7 +130,7 @@ def main() -> None:
     payload_with_images = build_dummy_payload(num_items=2, with_images=True)
     print("Sending request with images to /complaintFeatures...")
 
-    response_with_images = requests.request("GET", API_URL, json=payload_with_images, timeout=120)
+    response_with_images = requests.post(API_URL, json=payload_with_images, timeout=120)
     print("Status (with images):", response_with_images.status_code)
 
     if response_with_images.status_code != 200:
@@ -146,7 +146,7 @@ def main() -> None:
     payload_no_images = build_dummy_payload(num_items=2, with_images=False)
     print("Sending request with NO images to /complaintFeatures...")
 
-    response_no_images = requests.request("GET", API_URL, json=payload_no_images, timeout=120)
+    response_no_images = requests.post(API_URL, json=payload_no_images, timeout=120)
     print("Status (no images):", response_no_images.status_code)
 
     if response_no_images.status_code != 200:

@@ -67,7 +67,7 @@ def _decode_base64_to_bytesio(image_b64: str) -> io.BytesIO:
         raise ValueError("Invalid base64 image string") from exc
 
 
-@app.get("/complaintFeatures", response_model=ComplaintFeaturesResponse)
+@app.post("/complaintFeatures/", response_model=ComplaintFeaturesResponse)
 def complaint_features(payload: ComplaintFeaturesRequest = Body(...)) -> ComplaintFeaturesResponse:
     try:
         items_for_model: list[dict] = []
@@ -82,7 +82,7 @@ def complaint_features(payload: ComplaintFeaturesRequest = Body(...)) -> Complai
                     "images": image_streams,
                 }
             )
-
+            print(item.title, item.description, len(image_streams))
         predictions = predict_from_items(
             model=model,
             items=items_for_model,
@@ -91,6 +91,8 @@ def complaint_features(payload: ComplaintFeaturesRequest = Body(...)) -> Complai
         )
         return ComplaintFeaturesResponse(predictions=predictions)
     except ValueError as exc:
+        print(f"ValueError in complaint_features: {exc}")
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
+        print(f"Unexpected error in complaint_features: {exc}")
         raise HTTPException(status_code=500, detail=f"Prediction failed: {exc}") from exc
