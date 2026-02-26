@@ -26,36 +26,50 @@ public class PredictionApiClient {
 
     public PredictionResult predictSingle(PredictionRequestItem item) {
         try {
-            String requestBody = objectMapper.writeValueAsString(List.of(item));
+            // Wrap inside "items"
+            PredictionRequest requestPayload = new PredictionRequest(List.of(item));
+            String requestBody = objectMapper.writeValueAsString(requestPayload);
+
             HttpClient client = HttpClient.newBuilder()
                     .connectTimeout(Duration.ofMillis(properties.getConnectTimeoutMs()))
                     .build();
-            HttpRequest request = HttpRequest.newBuilder(URI.create(properties.getEndpoint().toString()))
+
+            HttpRequest request = HttpRequest.newBuilder(
+                            URI.create(properties.getEndpoint().toString()))
                     .timeout(Duration.ofMillis(properties.getReadTimeoutMs()))
                     .header("Content-Type", "application/json")
-                    .method("GET", HttpRequest.BodyPublishers.ofString(requestBody))
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response =
+                    client.send(request, HttpResponse.BodyHandlers.ofString());
+
             if (response.statusCode() >= 400) {
-                throw new IntegrationException("Prediction API returned status " + response.statusCode());
+                throw new IntegrationException(
+                        "Prediction API returned status " + response.statusCode());
             }
+
             String rawJson = response.body();
             JsonNode root = objectMapper.readTree(rawJson);
             return parser.parse(root, rawJson);
+
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             log.warn("Prediction API call interrupted: {}", ex.getMessage());
             throw new IntegrationException("Prediction API call interrupted", ex);
+
         } catch (IOException ex) {
             log.warn("Prediction API call failed: {}", ex.getMessage());
             throw new IntegrationException("Prediction API call failed", ex);
+
         } catch (IntegrationException ex) {
             throw ex;
+
         } catch (Exception ex) {
             throw new IntegrationException("Unable to parse prediction response", ex);
         }
     }
 
     public record PredictionRequestItem(String title, String description, List<String> images) {}
+    public record PredictionRequest(List<PredictionRequestItem> items) {}
 }
