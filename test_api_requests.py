@@ -50,17 +50,16 @@ def _random_base64_image(width: int = 64, height: int = 64) -> str:
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 
-def build_dummy_payload(num_items: int = 2) -> dict[str, Any]:
+def build_dummy_payload(num_items: int = 2, with_images: bool = True) -> dict[str, Any]:
     items = []
     for _ in range(num_items):
-        images = [_random_base64_image() for _ in range(random.randint(1, 3))]
-        items.append(
-            {
-                "title": _random_text("Complaint title", min_words=2, max_words=6),
-                "description": _random_text("Complaint description", min_words=10, max_words=20),
-                "images": images,
-            }
-        )
+        item = {
+            "title": _random_text("Complaint title", min_words=2, max_words=6),
+            "description": _random_text("Complaint description", min_words=10, max_words=20),
+        }
+        if with_images:
+            item["images"] = [_random_base64_image() for _ in range(random.randint(1, 3))]
+        items.append(item)
 
     return {
         "items": items,
@@ -128,20 +127,41 @@ def main() -> None:
     print("Waiting for API to be available...")
     wait_for_api()
 
-    payload = build_dummy_payload(num_items=2)
-    print("Sending request to /complaintFeatures...")
+    payload_with_images = build_dummy_payload(num_items=2, with_images=True)
+    print("Sending request with images to /complaintFeatures...")
 
-    response = requests.request("GET", API_URL, json=payload, timeout=120)
-    print("Status:", response.status_code)
+    response_with_images = requests.request("GET", API_URL, json=payload_with_images, timeout=120)
+    print("Status (with images):", response_with_images.status_code)
 
-    if response.status_code != 200:
-        raise AssertionError(f"Expected status 200, got {response.status_code}. Body: {response.text}")
+    if response_with_images.status_code != 200:
+        raise AssertionError(
+            f"Expected status 200 for with-images request, got {response_with_images.status_code}. "
+            f"Body: {response_with_images.text}"
+        )
 
-    response_json = response.json()
-    validate_response(response_json, expected_count=len(payload["items"]))
+    response_json_with_images = response_with_images.json()
+    validate_response(response_json_with_images, expected_count=len(payload_with_images["items"]))
+    print("With-images response validated successfully.")
 
-    print("Response validated successfully.")
-    print(json.dumps(response_json, indent=2)[:2500])
+    payload_no_images = build_dummy_payload(num_items=2, with_images=False)
+    print("Sending request with NO images to /complaintFeatures...")
+
+    response_no_images = requests.request("GET", API_URL, json=payload_no_images, timeout=120)
+    print("Status (no images):", response_no_images.status_code)
+
+    if response_no_images.status_code != 200:
+        raise AssertionError(
+            f"Expected status 200 for no-images request, got {response_no_images.status_code}. "
+            f"Body: {response_no_images.text}"
+        )
+
+    response_json_no_images = response_no_images.json()
+    validate_response(response_json_no_images, expected_count=len(payload_no_images["items"]))
+    print("No-images response validated successfully.")
+
+    print("Both scenarios passed.")
+    print("Sample response (no images):")
+    print(json.dumps(response_json_no_images, indent=2)[:2500])
 
 
 if __name__ == "__main__":

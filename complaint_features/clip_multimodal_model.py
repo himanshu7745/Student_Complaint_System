@@ -60,6 +60,14 @@ class CLIPSeverityClassifier(nn.Module):
             nn.Linear(hidden_dim // 2, 1),
         )
 
+        # Text-only severity head (used when no images are provided)
+        self.severity_text_mlp = nn.Sequential(
+            nn.Linear(embed_dim, hidden_dim // 2),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden_dim // 2, 1),
+        )
+
         # Output must match CLIP embedding dimension for cosine classification
         self.fusion_mlp = nn.Sequential(
             nn.Linear(2 * embed_dim, hidden_dim),
@@ -143,16 +151,27 @@ class CLIPSeverityClassifier(nn.Module):
             class_features = F.normalize(class_features, dim=-1)
         return class_features
 
-    def _compute_shared_features(self, images: Sequence[ImageInput], text: str) -> dict:
+    def _compute_shared_features(self, images: Sequence[ImageInput] | None, text: str) -> dict:
         """
         Computes shared multimodal features once and reuses them across heads.
         """
-        image_embed = self.encode_images(images, normalize=True)  # [1, D]
         text_embed = self.encode_text(text, normalize=True)  # [1, D]
-        combined = torch.cat([image_embed, text_embed], dim=-1)  # [1, 2D]
-        fused = self.fusion_mlp(combined)  # [1, D]
-        fused = F.normalize(fused, dim=-1)
+
+        has_images = images is not None and len(images) > 0
+        image_embed = None
+        combined = None
+
+        if has_images:
+            image_embed = self.encode_images(images, normalize=True)  # [1, D]
+            combined = torch.cat([image_embed, text_embed], dim=-1)  # [1, 2D]
+            fused = self.fusion_mlp(combined)  # [1, D]
+            fused = F.normalize(fused, dim=-1)
+        else:
+            # No image input: use text embedding directly, no fusion
+            fused = text_embed
+
         return {
+            "has_images": has_images,
             "image_embed": image_embed,
             "text_embed": text_embed,
             "combined": combined,
@@ -166,16 +185,25 @@ class CLIPSeverityClassifier(nn.Module):
         raw = self.severity_mlp(combined)  # [1, 1]
         return 1.0 + 9.0 * torch.sigmoid(raw)
 
-    def severity_score(self, images: Sequence[ImageInput], text: str) -> torch.Tensor:
+    def _severity_from_text(self, text_embed: torch.Tensor) -> torch.Tensor:
+        """
+        Returns severity score in range [1, 10] from text embedding [1, D].
+        """
+        raw = self.severity_text_mlp(text_embed)  # [1, 1]
+        return 1.0 + 9.0 * torch.sigmoid(raw)
+
+    def severity_score(self, images: Sequence[ImageInput] | None, text: str) -> torch.Tensor:
         """
         Returns severity score in range [1, 10] with shape [1, 1].
         """
         shared = self._compute_shared_features(images, text)
-        return self._severity_from_combined(shared["combined"])
+        if shared["has_images"]:
+            return self._severity_from_combined(shared["combined"])
+        return self._severity_from_text(shared["text_embed"])
 
     def classify(
         self,
-        images: Sequence[ImageInput],
+        images: Sequence[ImageInput] | None,
         text: str,
         class_texts: Sequence[str],
         temperature: float = 1.0,
@@ -211,7 +239,7 @@ class CLIPSeverityClassifier(nn.Module):
 
     def forward(
         self,
-        images: Sequence[ImageInput],
+        images: Sequence[ImageInput] | None,
         text: str,
         class_texts: Sequence[str],
         temperature: float = 1.0,
@@ -225,7 +253,10 @@ class CLIPSeverityClassifier(nn.Module):
             raise ValueError("temperature must be > 0")
 
         shared = self._compute_shared_features(images, text)
-        severity = self._severity_from_combined(shared["combined"])
+        if shared["has_images"]:
+            severity = self._severity_from_combined(shared["combined"])
+        else:
+            severity = self._severity_from_text(shared["text_embed"])
 
         class_embeds = self.encode_class_texts(class_texts, normalize=True)
         logits = (shared["fused"] @ class_embeds.T) / temperature  # [1, C]
@@ -279,8 +310,10 @@ def predict_from_items(
                     raise ValueError(f"items[{idx}]['title'] must be a non-empty string")
                 if not isinstance(description, str) or len(description.strip()) == 0:
                     raise ValueError(f"items[{idx}]['description'] must be a non-empty string")
-                if not isinstance(image_streams, list) or len(image_streams) == 0:
-                    raise ValueError(f"items[{idx}]['images'] must be a non-empty list of io.BytesIO")
+                if image_streams is None:
+                    image_streams = []
+                if not isinstance(image_streams, list):
+                    raise ValueError(f"items[{idx}]['images'] must be a list of io.BytesIO when provided")
 
                 pil_images: list[Image.Image] = []
                 for img_idx, stream in enumerate(image_streams):

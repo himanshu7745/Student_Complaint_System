@@ -5,7 +5,7 @@ from typing import List
 from fastapi import Body, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-from clip_multimodal_model import CLIPSeverityClassifier, predict_from_items
+from complaint_features.clip_multimodal_model import CLIPSeverityClassifier, predict_from_items
 
 
 app = FastAPI(title="Student Complaint Features API", version="1.0.0")
@@ -30,10 +30,9 @@ DEFAULT_CLASS_TEXTS = [
 class ComplaintItem(BaseModel):
     title: str = Field(..., min_length=1)
     description: str = Field(..., min_length=1)
-    images: List[str] = Field(
-        ...,
+    images: List[str] | None = Field(
+        default=None,
         description="List of base64-encoded image strings",
-        min_length=1,
     )
 
 
@@ -73,7 +72,9 @@ def complaint_features(payload: ComplaintFeaturesRequest = Body(...)) -> Complai
     try:
         items_for_model: list[dict] = []
         for item in payload.items:
-            image_streams = [_decode_base64_to_bytesio(img_str) for img_str in item.images]
+            image_streams = []
+            if item.images:
+                image_streams = [_decode_base64_to_bytesio(img_str) for img_str in item.images]
             items_for_model.append(
                 {
                     "title": item.title,
