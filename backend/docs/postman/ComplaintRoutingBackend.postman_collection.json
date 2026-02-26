@@ -1,0 +1,151 @@
+{
+  "info": {
+    "name": "Complaint Routing Backend",
+    "_postman_id": "c2a13ed8-9e57-4c88-a33d-complaint-routing-backend",
+    "description": "REST API collection for campus complaint lifecycle, routing, review queue, and settings.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "token", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "reviewerToken", "value": "" },
+    { "key": "complaintId", "value": "CMP-2026-1001" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login Student",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"student@campus.local\",\n  \"password\": \"Password@123\"\n}" }
+          }
+        },
+        {
+          "name": "Login Reviewer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"reviewer@campus.local\",\n  \"password\": \"Password@123\"\n}" }
+          }
+        },
+        {
+          "name": "Login Super Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"superadmin@campus.local\",\n  \"password\": \"Password@123\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Complaints",
+      "item": [
+        {
+          "name": "Create Complaint",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/complaints",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Wi-Fi down in hostel room\",\n  \"description\": \"Internet disconnects repeatedly in Pine Hostel Block A room 118 since last night.\",\n  \"hostel\": \"Pine Hostel\",\n  \"building\": \"Block A\",\n  \"room\": \"118\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Mine",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/complaints?mine=true&page=0&size=20"
+          }
+        },
+        {
+          "name": "Complaint Detail",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/api/complaints/{{complaintId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Inbox",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/admin/inbox?status=NEW&confidenceLevel=LOW"
+          }
+        },
+        {
+          "name": "Review Queue",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{reviewerToken}}" }],
+            "url": "{{baseUrl}}/api/admin/review-queue?page=0&size=20"
+          }
+        },
+        {
+          "name": "Approve Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{reviewerToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/admin/review-queue/{{complaintId}}/approve",
+            "body": { "mode": "raw", "raw": "{\n  \"internalNotes\": \"Approved after manual verification\"\n}" }
+          }
+        },
+        {
+          "name": "Analytics Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/admin/analytics/summary"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings (Super Admin)",
+      "item": [
+        {
+          "name": "Get Prediction Threshold",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/admin/settings/prediction-threshold"
+          }
+        },
+        {
+          "name": "Update Prediction Threshold",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/api/admin/settings/prediction-threshold",
+            "body": { "mode": "raw", "raw": "{\n  \"threshold\": 0.75\n}" }
+          }
+        }
+      ]
+    }
+  ]
+}

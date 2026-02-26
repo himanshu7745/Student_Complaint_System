@@ -1,0 +1,45 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:16
+    container_name: complaint-postgres
+    environment:
+      POSTGRES_DB: complaints
+      POSTGRES_USER: complaints
+      POSTGRES_PASSWORD: complaints
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U complaints -d complaints"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: complaint-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/complaints
+      DB_USERNAME: complaints
+      DB_PASSWORD: complaints
+      JWT_SECRET: please-change-this-super-secret-key-256-bits-minimum-1234567890
+      PREDICTION_API_URL: http://host.docker.internal:8090/complaintFeatures/
+      ATTACHMENT_PUBLIC_BASE_URL: http://localhost:8080/api/files
+      # Optional CDN domain for attachment delivery (typically image files).
+      # Example: https://cdn.yourdomain.com/complaint-attachments
+      ATTACHMENT_CDN_BASE_URL: ${ATTACHMENT_CDN_BASE_URL:-}
+      ATTACHMENT_CDN_IMAGES_ONLY: ${ATTACHMENT_CDN_IMAGES_ONLY:-true}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+
+volumes:
+  pgdata:

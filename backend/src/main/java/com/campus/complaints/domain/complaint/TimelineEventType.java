@@ -1,0 +1,21 @@
+package com.campus.complaints.domain.complaint;
+
+public enum TimelineEventType {
+    CREATED,
+    UPDATED,
+    STATUS_CHANGED,
+    CATEGORY_CHANGED,
+    PRIORITY_CHANGED,
+    ASSIGNED,
+    MESSAGE_ADDED,
+    ATTACHMENT_ADDED,
+    PREDICTION_COMPLETED,
+    PREDICTION_FAILED,
+    REVIEW_REQUIRED,
+    REVIEW_APPROVED,
+    ESCALATED,
+    RESOLVED,
+    CLOSED,
+    REOPENED,
+    FEEDBACK_ADDED
+}
