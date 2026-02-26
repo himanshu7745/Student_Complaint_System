@@ -67,7 +67,7 @@ public class AttachmentStorageService {
 
     public String asBase64(String storagePath, int maxBytes) {
         byte[] bytes = readBytes(storagePath);
-        if (bytes.length > maxBytes) {
+        if (maxBytes > 0 && bytes.length > maxBytes) {
             byte[] truncated = java.util.Arrays.copyOf(bytes, maxBytes);
             return Base64.getEncoder().encodeToString(truncated);
         }

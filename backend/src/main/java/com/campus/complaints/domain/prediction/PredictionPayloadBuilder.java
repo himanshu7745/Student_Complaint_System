@@ -28,7 +28,7 @@ public class PredictionPayloadBuilder {
     private Object mapImage(ComplaintAttachmentEntity attachment) {
         return switch (predictionProperties.getImageInputMode()) {
             case URL -> attachment.getPublicUrl();
-            case BASE64 -> attachmentStorageService.asBase64(attachment.getStoragePath(), predictionProperties.getMaxBase64Bytes());
+            case BASE64 -> attachmentStorageService.asBase64(attachment.getStoragePath(), -1);
             case BYTES -> toUnsignedByteList(attachmentStorageService.readBytes(attachment.getStoragePath()));
         };
     }

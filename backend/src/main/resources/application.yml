@@ -57,7 +57,7 @@ app:
 
 prediction:
   endpoint: ${PREDICTION_API_URL:http://localhost:8090/complaintFeatures/}
-  image-input-mode: ${PREDICTION_IMAGE_MODE:BYTES}
+  image-input-mode: ${PREDICTION_IMAGE_MODE:BASE64}
   connect-timeout-ms: 3000
   read-timeout-ms: 10000
   rerun-on-update: true
