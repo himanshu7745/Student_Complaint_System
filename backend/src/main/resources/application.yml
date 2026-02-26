@@ -1,0 +1,78 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: student-complaint-management
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    # Local dev with ddl-auto=create-drop: disable Flyway to avoid checksum conflicts.
+    enabled: false
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 25MB
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT}
+    username: ${SMTP_USERNAME:your-smtp-user}
+    password: ${SMTP_PASSWORD:your-smtp-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+logging:
+  level:
+    com.codex.scms: INFO
+    org.springframework.security: INFO
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+app:
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+      - http://127.0.0.1:5173
+  jwt:
+    secret: ${JWT_SECRET:replace-with-a-very-long-base64-secret-key-at-least-32-bytes}
+    access-token-expiration-minutes: ${JWT_ACCESS_EXPIRATION_MINUTES:120}
+    ack-token-expiration-hours: ${JWT_ACK_EXPIRATION_HOURS:240}
+  public-urls:
+    frontend-base-url: ${FRONTEND_URL}
+    backend-base-url: ${BACKEND_URL}
+  ai:
+    base-url: ${AI_BASE_URL}
+    timeout-ms: ${AI_TIMEOUT_MS:30000}
+    api-key: ${AI_API_KEY}
+    auth-header-name: X-API-Key
+  imgbb:
+    base-url: https://api.imgbb.com/1/upload
+    api-key: ${IMGBB_API_KEY}
+    expiration-seconds: 0
+    max-image-count: 5
+    max-image-size-bytes: 5242880
+    allowed-mime-types:
+      - image/jpeg
+      - image/png
+      - image/webp
+  sla:
+    scheduler-cron: "0 0 * * * *"

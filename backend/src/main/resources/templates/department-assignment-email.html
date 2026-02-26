@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Complaint Assignment</title>
+</head>
+<body style="font-family: Arial, sans-serif; background:#f6f7fb; padding:24px; color:#111827;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="680" style="max-width:100%; background:#ffffff; border-radius:12px; padding:24px; box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+          <tr><td>
+            <h2 style="margin:0 0 8px;">Complaint Assigned</h2>
+            <p style="margin:0 0 16px; color:#4b5563;">Reference: <strong>{{COMPLAINT_REF}}</strong></p>
+
+            <p><strong>Title:</strong> {{TITLE}}</p>
+            <p><strong>Description:</strong><br/>{{DESCRIPTION}}</p>
+            <p><strong>Area:</strong> {{AREA}}</p>
+            <p><strong>Complaint Date:</strong> {{COMPLAINT_DATE}}</p>
+            <p><strong>AI Severity:</strong> {{SEVERITY}}</p>
+            <p><strong>SLA Due Date:</strong> {{SLA_DUE_AT}}</p>
+
+            <h4>Attached Images</h4>
+            <ul>{{IMAGE_LIST}}</ul>
+
+            <p style="margin-top:24px;">Please acknowledge receipt after reviewing this complaint:</p>
+            <p>
+              <a href="{{ACK_URL}}" style="background:#0f766e; color:#ffffff; text-decoration:none; padding:12px 16px; border-radius:8px; display:inline-block;">Acknowledge Complaint</a>
+            </p>
+            <p style="color:#6b7280; font-size:12px;">If the button does not work, use the link below:<br/><a href="{{ACK_URL}}">{{ACK_URL}}</a></p>
+          </td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
